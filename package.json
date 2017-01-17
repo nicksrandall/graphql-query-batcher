@@ -2,7 +2,7 @@
   "name": "graphql-query-batcher",
   "version": "0.1.0",
   "description": "light weight query batcher for graphql",
-  "main": "lib/library.js",
+  "main": "lib/GraphqlQueryBatcher.js",
   "scripts": {
     "build": "webpack --mode=build",
     "dev": "webpack --progress --colors --watch --mode=dev",
