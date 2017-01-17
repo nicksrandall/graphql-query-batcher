@@ -47,10 +47,10 @@ function dispatchQueue(client) {
 
 // api
 export default class QueryBatcher {
-  constructor(url, { batchDuration = 6, shouldBatch = true, maxBatchSize = 0 } = {}) {
+  constructor(url, { batchInterval = 6, shouldBatch = true, maxBatchSize = 0 } = {}) {
     this._url = url;
     this._options = {
-      batchDuration,
+      batchInterval,
       shouldBatch,
       maxBatchSize,
     };
@@ -81,7 +81,7 @@ export default class QueryBatcher {
 
       if (this._queue.length === 1) {
         if (this._options.shouldBatch) {
-          setTimeout(() => dispatchQueue(this), this._options.batchDuration);
+          setTimeout(() => dispatchQueue(this), this._options.batchInterval);
         } else {
           dispatchQueue(this);
         }

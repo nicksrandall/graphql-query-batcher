@@ -40,7 +40,7 @@ client.fetch(`
 ```js
 const options = {
   shouldBatch: true,  // should we batch queries?
-  batchDuration: 6,   // duration of each batch window (in MS)
+  batchInterval: 6,   // duration of each batch window (in MS)
   maxBatch: 0,        // max number of requests in a batch (0 = no max)
 };
 ```
