@@ -1,0 +1,39 @@
+{
+  "name": "graphql-query-batcher",
+  "version": "0.0.1",
+  "description": "light weight query batcher for graphql",
+  "main": "lib/library.js",
+  "scripts": {
+    "build": "webpack --mode=build",
+    "dev": "webpack --progress --colors --watch --mode=dev",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "babel": "6.5.2",
+    "babel-core": "6.21.0",
+    "babel-eslint": "7.1.1",
+    "babel-loader": "6.2.10",
+    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-preset-es2015": "6.18.0",
+    "eslint": "^3.13.1",
+    "eslint-loader": "1.6.1",
+    "jest": "^18.1.0",
+    "jest-fetch-mock": "^1.0.6",
+    "webpack": "1.14.0",
+    "yargs": "6.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicksrandall/graphql-query-batcher.git"
+  },
+  "keywords": [
+    "graphql"
+  ],
+  "author": "Nick Randall",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nicksrandall/graphql-query-batcher/issues"
+  },
+  "homepage": "https://github.com/nicksrandall/graphql-query-batcher"
+}
