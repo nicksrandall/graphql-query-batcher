@@ -1,6 +1,6 @@
 {
   "name": "graphql-query-batcher",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "light weight query batcher for graphql",
   "main": "lib/library.js",
   "scripts": {
