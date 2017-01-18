@@ -37,7 +37,39 @@ client.fetch(`
   });
 ```
 
-## Options
+## Docs
+### Client Constructor 
+- param *url* - {string} the url to the graphql endpoint you are targeting.
+- param *options* - [{object}] options for client.
+- param *options.shouldBatch* - {boolean} if the client should batch requests.
+- param *options.batchInterval* - {integer} duration of each batch window.
+- param *options.maxBatchSize* - {integer} the max humber of requests in a batch.
+
+```js
+const client = New QueryBatcher(url, options);
+```
+
+### client.fetch
+- param *query* - {string} the graphql query to send
+- param *variables* - {[object]} variables to inject into query
+- param *operationName* - {[string]} operation name in query to use
+
+```js
+client.fetch(`
+  query getHuman($id: ID!) {
+    human(id: $id) {
+      name
+      height
+    }
+  }
+  `, { id: "1001" }, 'getHuman')
+  .then(human => {
+    // do something with human
+    console.log(human);
+  });
+```
+
+## Default Options
 ```js
 const options = {
   shouldBatch: true,  // should we batch queries?
