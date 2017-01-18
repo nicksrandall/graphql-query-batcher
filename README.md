@@ -5,7 +5,8 @@ A light weight [graphql](http://graphql.org/) query batcher for javascript.
 ```js
 import QueryBatcher from 'graphql-query-batcher';
 
-var client = New QueryBatcher('/graphql' /*, options */);
+// Create a new client with your graphql URL and [optional] options.
+const client = New QueryBatcher('/graphql' /*, options */);
 
 // although I am making 2 requests (different IDs), the client will batch them resulting
 // in only 1 call to my server
@@ -41,11 +42,21 @@ client.fetch(`
 const options = {
   shouldBatch: true,  // should we batch queries?
   batchInterval: 6,   // duration of each batch window (in MS)
-  maxBatchSize: 0,        // max number of requests in a batch (0 = no max)
+  maxBatchSize: 0,    // max number of requests in a batch (0 = no max)
 };
 ```
 
 ## Requirements
-The graphql implementation you are using must suppoprt batching! To learn more read this: https://dev-blog.apollodata.com/query-batching-in-apollo-63acfd859862
+### Javascript
+- this implementation uses [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API). If you want to support [browsers that don't natively support it](http://caniuse.com/#feat=fetch), you'll need to use a [polyfill](https://github.com/github/fetch).
 
+### Graphql
+The graphql implementation you are using must suppoprt batching! This means that your graphql endpoint should be able to take an array of requests and return an array of results.
+
+To learn more read this: https://dev-blog.apollodata.com/query-batching-in-apollo-63acfd859862
+
+> To see an expmaple implementation in Golang, see https://github.com/nicksrandall/batched-graphql-handler
+
+## Alternatives
+- [Apollo](https://github.com/apollostack/apollo-client)
 
