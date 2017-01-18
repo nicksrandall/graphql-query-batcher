@@ -4,7 +4,8 @@
   "description": "light weight query batcher for graphql",
   "main": "lib/GraphqlQueryBatcher.js",
   "scripts": {
-    "build": "webpack --mode=build",
+    "build": "webpack --mode=dev",
+    "build:dist": "webpack --mode=build",
     "dev": "webpack --progress --colors --watch --mode=dev",
     "test": "jest",
     "test:watch": "jest --watch"

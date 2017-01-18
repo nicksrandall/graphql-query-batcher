@@ -53,6 +53,7 @@ const client = New QueryBatcher(url, options);
 - param *query* - {string} the graphql query to send
 - param *variables* - {[object]} variables to inject into query
 - param *operationName* - {[string]} operation name in query to use
+- return {promise} - resolves to parsed json of server response
 
 ```js
 client.fetch(`

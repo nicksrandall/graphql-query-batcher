@@ -1,4 +1,10 @@
-// helper functions
+/**
+ * takes a list of requests (queue) and batches them into a single server request.
+ * It will then resolve each individual requests promise with the appropriate data.
+ * @private
+ * @param {QueryBatcher}   client - the client to use
+ * @param {Array.<object>} queue  - the list of requests to batch
+ */
 function dispatchQueueBatch(client, queue) {
   const batchedQuery = queue.map(item => item.request);
 
@@ -27,6 +33,11 @@ function dispatchQueueBatch(client, queue) {
     });
 }
 
+/**
+ * creates a list of requests to batch according to max batch size.
+ * @private
+ * @param {QueryBatcher} client - the client to create list of requests from from
+ */
 function dispatchQueue(client) {
   const queue = client._queue;
   const maxBatchSize = client._options.maxMatchSize;
@@ -45,7 +56,14 @@ function dispatchQueue(client) {
   }
 }
 
-// api
+/**
+ * Create a batcher client.
+ * @param {string}  url                   - The url to the graphql endpoint you are targeting.
+ * @param {object}  options               - the options to be used by client
+ * @param {boolean} options.shouldBatch   - should the client batch requests. (default true)
+ * @param {integer} options.batchInterval - duration (in MS) of each batch window. (default 6)
+ * @param {boolean} options.maxBatchSize  - max number of requests in a batch. (default 0)
+ */
 export default class QueryBatcher {
   constructor(url, { batchInterval = 6, shouldBatch = true, maxBatchSize = 0 } = {}) {
     this._url = url;
@@ -59,11 +77,11 @@ export default class QueryBatcher {
 
   /**
    * Fetch will send a graphql request and return the parsed json.
-   * @param query         {string}    the graphql query.
-   * @param variables     {[object]}  any variables you wish to inject as key/value pairs.
-   * @param operationName {[string]}  the graphql operationName.
+   * @param {string}    query          - the graphql query.
+   * @param {[object]}  variables      - any variables you wish to inject as key/value pairs.
+   * @param {[string]}  operationName  - the graphql operationName.
    *
-   * @return {promise}
+   * @return {promise} resolves to parsed json of server response
    */
   fetch(query, variables, operationName) {
     const request = { query };
