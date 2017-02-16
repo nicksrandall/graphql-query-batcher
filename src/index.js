@@ -110,5 +110,28 @@ export default class QueryBatcher {
 
     return promise;
   }
+
+  forceFetch(query, variables, operationName, overrides = {}) {
+    const request = { query };
+    const options = Object.assign({}, this._options, overrides);
+
+    if (variables) {
+      request.variables = variables;
+    }
+
+    if (operationName) {
+      request.operationName = operationName;
+    }
+
+    const promise = new Promise((resolve, reject) => {
+      const client = {
+        '_queue': [{ request, resolve, reject }]
+      };
+
+      dispatchQueue(client, options);
+    });
+
+    return promise;
+  }
 }
 
