@@ -38,9 +38,9 @@ function dispatchQueueBatch(client, queue) {
  * @private
  * @param {QueryBatcher} client - the client to create list of requests from from
  */
-function dispatchQueue(client) {
+function dispatchQueue(client, options) {
   const queue = client._queue;
-  const maxBatchSize = client._options.maxMatchSize;
+  const maxBatchSize = options.maxMatchSize;
 
   client._queue = [];
 
@@ -83,8 +83,9 @@ export default class QueryBatcher {
    *
    * @return {promise} resolves to parsed json of server response
    */
-  fetch(query, variables, operationName) {
+  fetch(query, variables, operationName, overrides = {}) {
     const request = { query };
+    const options = Object.assign({}, this._options, overrides);
 
     if (variables) {
       request.variables = variables;
@@ -98,10 +99,10 @@ export default class QueryBatcher {
       this._queue.push({ request, resolve, reject });
 
       if (this._queue.length === 1) {
-        if (this._options.shouldBatch) {
-          setTimeout(() => dispatchQueue(this), this._options.batchInterval);
+        if (options.shouldBatch) {
+          setTimeout(() => dispatchQueue(this, options), options.batchInterval);
         } else {
-          dispatchQueue(this);
+          dispatchQueue(this, options);
         }
       }
 
