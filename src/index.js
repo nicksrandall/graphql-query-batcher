@@ -125,7 +125,8 @@ export default class QueryBatcher {
 
     const promise = new Promise((resolve, reject) => {
       const client = {
-        '_queue': [{ request, resolve, reject }]
+        _url: this._url,
+        _queue: [{ request, resolve, reject }],
       };
 
       dispatchQueue(client, options);
