@@ -24,7 +24,7 @@ function dispatchQueueBatch(client, queue) {
   })
     .then(response => response.json())
     .then(responses => {
-      if (batchedQuery.length === 1) {
+      if (queue.length === 1 && !Array.isArray(responses)) {
         if (responses.errors && responses.errors.length) {
           return queue[0].reject(responses);
         }
