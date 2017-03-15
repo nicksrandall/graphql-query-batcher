@@ -6,7 +6,12 @@
  * @param {Array.<object>} queue  - the list of requests to batch
  */
 function dispatchQueueBatch(client, queue) {
-  const batchedQuery = queue.map(item => item.request);
+  let batchedQuery = queue.map(item => item.request);
+
+  // if there is only one item, send it as obj and not array
+  if (batchedQuery.length === 1) {
+    batchedQuery = batchedQuery[0];
+  }
 
   return fetch(client._url, {
     method: 'post',
