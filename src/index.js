@@ -24,7 +24,14 @@ function dispatchQueueBatch(client, queue) {
   })
     .then(response => response.json())
     .then(responses => {
-      if (responses.length !== queue.length) return new Error('response length did not match query length');
+      if (batchedQuery.length === 1) {
+        if (responses.errors && responses.errors.length) {
+          return queue[0].reject(responses);
+        }
+        return queue[0].resolve(responses);
+      } else if (responses.length !== queue.length) {
+        return new Error('response length did not match query length');
+      }
 
       for (let i = 0; i < queue.length; i++) {
         if (responses[i].errors && responses[i].errors.length) {
