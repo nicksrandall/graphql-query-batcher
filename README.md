@@ -1,5 +1,5 @@
 # Graphql Query Batcher
-A light weight [graphql](http://graphql.org/) query batcher for javascript.
+A light weight (~700 bytes) [graphql](http://graphql.org/) query batcher for javascript.
 
 ## Usage
 ```js
