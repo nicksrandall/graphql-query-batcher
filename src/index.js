@@ -60,7 +60,7 @@ function dispatchQueue(client, options) {
     for (let i = 0; i < queue.length / maxBatchSize; i++) {
       dispatchQueueBatch(
         client,
-        queue.slice(i * maxBatchSize, (i + 1) * maxBatchSize),
+        queue.slice(i * maxBatchSize, (i + 1) * maxBatchSize)
       );
     }
   } else {
@@ -147,4 +147,5 @@ export default class QueryBatcher {
     return promise;
   }
 }
+
 
