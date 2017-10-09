@@ -83,7 +83,7 @@ function dispatchQueue(client: QueryBatcher, options: Options): void {
  * @param {boolean} options.defaultHeaders  - default headers to include with every request
  *
  * @example
- * const fetcher = batchedQuery => return fetch('path/to/graphql', {
+ * const fetcher = batchedQuery => fetch('path/to/graphql', {
  *    method: 'post',
  *    headers: {
  *      Accept: 'application/json',
