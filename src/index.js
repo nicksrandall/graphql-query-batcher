@@ -9,7 +9,7 @@ type QueryError = {
   details?: { [key: string]: any },
 }
 type Result = { data: { [key: string]: any }, errors: Array<QueryError> }
-type Fetcher = (batchedQuery: Array<Query>) => Promise<Array<Result>>
+type Fetcher = (batchedQuery: Array<Query> | Query) => Promise<Array<Result>>
 type Options = {
   batchInterval?: number,
   shouldBatch?: boolean,
@@ -26,27 +26,29 @@ type Queue = Array<{ request: Query, resolve: Function, reject: Function }>
  */
 function dispatchQueueBatch(client: QueryBatcher, queue: Queue): void {
   let batchedQuery = queue.map(item => item.request)
-  client.fetcher(batchedQuery)
-    .then(responses => {
-      if (queue.length === 1 && !Array.isArray(responses)) {
-        if (responses.errors && responses.errors.length) {
-          queue[0].reject(responses);
-          return
-        }
-        queue[0].resolve(responses);
+  if (batchedQuery.length === 1) {
+    batchedQuery = batchedQuery[0]
+  }
+  client.fetcher(batchedQuery).then(responses => {
+    if (queue.length === 1 && !Array.isArray(responses)) {
+      if (responses.errors && responses.errors.length) {
+        queue[0].reject(responses)
         return
-      } else if (responses.length !== queue.length) {
-        throw new Error('response length did not match query length');
       }
+      queue[0].resolve(responses)
+      return
+    } else if (responses.length !== queue.length) {
+      throw new Error('response length did not match query length')
+    }
 
-      for (let i = 0; i < queue.length; i++) {
-        if (responses[i].errors && responses[i].errors.length) {
-          queue[i].reject(responses[i]);
-        } else {
-          queue[i].resolve(responses[i]);
-        }
+    for (let i = 0; i < queue.length; i++) {
+      if (responses[i].errors && responses[i].errors.length) {
+        queue[i].reject(responses[i])
+      } else {
+        queue[i].resolve(responses[i])
       }
-    })
+    }
+  })
 }
 
 /**

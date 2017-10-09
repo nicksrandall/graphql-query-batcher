@@ -8,7 +8,7 @@
     "flow": "flow",
     "prettier": "prettier --parser flow --single-quote --trailing-comma es5 --no-semi --write src/**/*.js",
     "lint": "eslint src",
-    "test": "npm run lint && jest",
+    "test": "npm run lint && flow && jest",
     "build": "npm-run-all clean -p rollup:* -p minify:* -s size",
     "clean": "rimraf dist && mkdirp dist",
     "rollup:cjs": "rollup -c rollup.config.js -m -f cjs -n gql src/index.js -o $npm_package_main",

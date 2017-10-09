@@ -1,10 +1,10 @@
 import QueryBatcher from '../src/index.js'
 
-const fetcher = batched => {
+const fetcher = batchedQuery => {
   const results = [{ id: 1 }, { id: 2 }]
-  return new Promise((resolve) => {
-    resolve(results.slice(0, batched.length))
-  })
+  return Promise.resolve(
+    results.slice(0, Array.isArray(batchedQuery) ? batchedQuery.length : 1)
+  )
 }
 
 describe('', function() {
