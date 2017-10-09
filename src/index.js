@@ -1,36 +1,42 @@
+// @flow
+type Variables = { [variable: string]: any }
+type Query = { query: string, variables?: Variables, operationName?: string }
+type QueryError = {
+  message: string,
+  locations?: Array<{ line: number, column: number }>,
+  path?: any,
+  rid: string,
+  details?: { [key: string]: any },
+}
+type Result = { data: { [key: string]: any }, errors: Array<QueryError> }
+type Fetcher = (batchedQuery: Array<Query>) => Promise<Array<Result>>
+type Options = {
+  batchInterval?: number,
+  shouldBatch?: boolean,
+  maxBatchSize?: number,
+}
+type Queue = Array<{ request: Query, resolve: Function, reject: Function }>
+
 /**
  * takes a list of requests (queue) and batches them into a single server request.
  * It will then resolve each individual requests promise with the appropriate data.
  * @private
  * @param {QueryBatcher}   client - the client to use
- * @param {Array.<object>} queue  - the list of requests to batch
+ * @param {Queue} queue  - the list of requests to batch
  */
-function dispatchQueueBatch(client, queue) {
-  let batchedQuery = queue.map(item => item.request);
-
-  // if there is only one item, send it as obj and not array
-  if (batchedQuery.length === 1) {
-    batchedQuery = batchedQuery[0];
-  }
-
-  return fetch(client._url, {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(batchedQuery),
-    credentials: 'include',
-  })
-    .then(response => response.json())
+function dispatchQueueBatch(client: QueryBatcher, queue: Queue): void {
+  let batchedQuery = queue.map(item => item.request)
+  client.fetcher(batchedQuery)
     .then(responses => {
       if (queue.length === 1 && !Array.isArray(responses)) {
         if (responses.errors && responses.errors.length) {
-          return queue[0].reject(responses);
+          queue[0].reject(responses);
+          return
         }
-        return queue[0].resolve(responses);
+        queue[0].resolve(responses);
+        return
       } else if (responses.length !== queue.length) {
-        return new Error('response length did not match query length');
+        throw new Error('response length did not match query length');
       }
 
       for (let i = 0; i < queue.length; i++) {
@@ -40,112 +46,135 @@ function dispatchQueueBatch(client, queue) {
           queue[i].resolve(responses[i]);
         }
       }
-
-      return null;
-    });
+    })
 }
 
 /**
  * creates a list of requests to batch according to max batch size.
  * @private
  * @param {QueryBatcher} client - the client to create list of requests from from
+ * @param {Options} options - the options for the batch
  */
-function dispatchQueue(client, options) {
-  const queue = client._queue;
-  const maxBatchSize = options.maxMatchSize;
+function dispatchQueue(client: QueryBatcher, options: Options): void {
+  const queue = client._queue
+  const maxBatchSize = options.maxBatchSize || 0
 
-  client._queue = [];
+  client._queue = []
 
   if (maxBatchSize > 0 && maxBatchSize < queue.length) {
     for (let i = 0; i < queue.length / maxBatchSize; i++) {
       dispatchQueueBatch(
         client,
         queue.slice(i * maxBatchSize, (i + 1) * maxBatchSize)
-      );
+      )
     }
   } else {
-    dispatchQueueBatch(client, queue);
+    dispatchQueueBatch(client, queue)
   }
 }
 
 /**
  * Create a batcher client.
- * @param {string}  url                   - The url to the graphql endpoint you are targeting.
- * @param {object}  options               - the options to be used by client
- * @param {boolean} options.shouldBatch   - should the client batch requests. (default true)
- * @param {integer} options.batchInterval - duration (in MS) of each batch window. (default 6)
- * @param {boolean} options.maxBatchSize  - max number of requests in a batch. (default 0)
+ * @param {Fetcher} fetcher                 - The url to the graphql endpoint you are targeting.
+ * @param {Options} options                 - the options to be used by client
+ * @param {boolean} options.shouldBatch     - should the client batch requests. (default true)
+ * @param {integer} options.batchInterval   - duration (in MS) of each batch window. (default 6)
+ * @param {integer} options.maxBatchSize    - max number of requests in a batch. (default 0)
+ * @param {boolean} options.defaultHeaders  - default headers to include with every request
  */
 export default class QueryBatcher {
-  constructor(url, { batchInterval = 6, shouldBatch = true, maxBatchSize = 0 } = {}) {
-    this._url = url;
+  fetcher: Fetcher
+  _options: Options
+  _queue: Queue
+  constructor(
+    fetcher: Fetcher,
+    { batchInterval = 6, shouldBatch = true, maxBatchSize = 0 }: Options = {}
+  ) {
+    this.fetcher = fetcher
     this._options = {
       batchInterval,
       shouldBatch,
       maxBatchSize,
-    };
-    this._queue = [];
+    }
+    this._queue = []
   }
 
   /**
    * Fetch will send a graphql request and return the parsed json.
-   * @param {string}    query          - the graphql query.
-   * @param {[object]}  variables      - any variables you wish to inject as key/value pairs.
-   * @param {[string]}  operationName  - the graphql operationName.
+   * @param {string}      query          - the graphql query.
+   * @param {Variables}   variables      - any variables you wish to inject as key/value pairs.
+   * @param {[string]}    operationName  - the graphql operationName.
+   * @param {Options}     overrides      - the client options overrides.
    *
    * @return {promise} resolves to parsed json of server response
    */
-  fetch(query, variables, operationName, overrides = {}) {
-    const request = { query };
-    const options = Object.assign({}, this._options, overrides);
+  fetch(
+    query: string,
+    variables?: Variables,
+    operationName?: string,
+    overrides?: Options = {}
+  ): Promise<Array<Result>> {
+    const request: Query = { query }
+    const options = Object.assign({}, this._options, overrides)
 
     if (variables) {
-      request.variables = variables;
+      request.variables = variables
     }
 
     if (operationName) {
-      request.operationName = operationName;
+      request.operationName = operationName
     }
 
     const promise = new Promise((resolve, reject) => {
-      this._queue.push({ request, resolve, reject });
+      this._queue.push({ request, resolve, reject })
 
       if (this._queue.length === 1) {
         if (options.shouldBatch) {
-          setTimeout(() => dispatchQueue(this, options), options.batchInterval);
+          setTimeout(() => dispatchQueue(this, options), options.batchInterval)
         } else {
-          dispatchQueue(this, options);
+          dispatchQueue(this, options)
         }
       }
+    })
 
-    });
-
-    return promise;
+    return promise
   }
 
-  forceFetch(query, variables, operationName, overrides = {}) {
-    const request = { query };
-    const options = Object.assign({}, this._options, overrides);
+  /**
+   * Fetch will send a graphql request and return the parsed json.
+   * @param {string}      query          - the graphql query.
+   * @param {Variables}   variables      - any variables you wish to inject as key/value pairs.
+   * @param {[string]}    operationName  - the graphql operationName.
+   * @param {Options}     overrides      - the client options overrides.
+   *
+   * @return {Promise<Array<Result>>} resolves to parsed json of server response
+   */
+  forceFetch(
+    query: string,
+    variables?: Variables,
+    operationName?: string,
+    overrides?: Options = {}
+  ): Promise<Array<Result>> {
+    const request: Query = { query }
+    const options = Object.assign({}, this._options, overrides, {
+      shouldBatch: false,
+    })
 
     if (variables) {
-      request.variables = variables;
+      request.variables = variables
     }
 
     if (operationName) {
-      request.operationName = operationName;
+      request.operationName = operationName
     }
 
     const promise = new Promise((resolve, reject) => {
-      const client = {
-        _url: this._url,
-        _queue: [{ request, resolve, reject }],
-      };
+      const client = new QueryBatcher(this.fetcher, this._options)
+      client._queue = [{ request, resolve, reject }]
 
-      dispatchQueue(client, options);
-    });
+      dispatchQueue(client, options)
+    })
 
-    return promise;
+    return promise
   }
 }
-
-

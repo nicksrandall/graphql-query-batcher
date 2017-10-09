@@ -1,45 +1,44 @@
-import QueryBatcher from '../src/index.js';
-global.fetch = require('jest-fetch-mock');
+import QueryBatcher from '../src/index.js'
 
-let batcher;
+const fetcher = batched => {
+  const results = [{ id: 1 }, { id: 2 }]
+  return new Promise((resolve) => {
+    resolve(results.slice(0, batched.length))
+  })
+}
 
-describe('', function () {
-  beforeAll(function () {
-    batcher = new QueryBatcher('/graphql');
-  });
-  describe('fetch', function () {
-
+describe('', function() {
+  describe('fetch', function() {
+    let mock = jest.fn(fetcher)
+    let batcher = new QueryBatcher(mock)
     it('should batch requests', () => {
-      fetch.mockResponseOnce(JSON.stringify([{id: 1},{id: 2}]));
-      const promise1 = batcher.fetch('{ query1 }');
-      const promise2 = batcher.fetch('{ query2 }');
+      const promise1 = batcher.fetch('{ query1 }')
+      const promise2 = batcher.fetch('{ query2 }')
 
       return Promise.all([
-        promise1.then((val) => {
-          return expect(val).toEqual(JSON.parse('{"id": 1}'));
+        promise1.then(val => {
+          return expect(val).toEqual(JSON.parse('{"id": 1}'))
         }),
-        promise2.then((val) => {
-          return expect(val).toEqual(JSON.parse('{"id": 2}'));
-        })
-      ])
-      .then(() => expect(fetch).toHaveBeenCalledTimes(1));
-    });
+        promise2.then(val => {
+          return expect(val).toEqual(JSON.parse('{"id": 2}'))
+        }),
+      ]).then(() => expect(mock).toHaveBeenCalledTimes(1))
+    })
 
     it('should force batch requests', () => {
-      fetch.mockResponseOnce(JSON.stringify([{id: 1}]));
-      const promise1 = batcher.forceFetch('{ query1 }');
-      fetch.mockResponseOnce(JSON.stringify([{id: 2}]));
-      const promise2 = batcher.forceFetch('{ query2 }');
+      let mock = jest.fn(fetcher)
+      let batcher = new QueryBatcher(mock)
+      const promise1 = batcher.forceFetch('{ query1 }')
+      const promise2 = batcher.forceFetch('{ query2 }')
 
       return Promise.all([
-        promise1.then((val) => {
-          return expect(val).toEqual(JSON.parse('{"id": 1}'));
+        promise1.then(val => {
+          return expect(val).toEqual(JSON.parse('{"id": 1}'))
         }),
-        promise2.then((val) => {
-          return expect(val).toEqual(JSON.parse('{"id": 2}'));
-        })
-      ])
-      .then(() => expect(fetch).toHaveBeenCalledTimes(3));
-    });
-  });
-});
+        promise2.then(val => {
+          return expect(val).toEqual(JSON.parse('{"id": 1}'))
+        }),
+      ]).then(() => expect(mock).toHaveBeenCalledTimes(2))
+    })
+  })
+})
