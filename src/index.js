@@ -77,7 +77,7 @@ function dispatchQueue(client: QueryBatcher, options: Options): void {
 
 /**
  * Create a batcher client.
- * @param {Fetcher} fetcher                 - The url to the graphql endpoint you are targeting.
+ * @param {Fetcher} fetcher                 - A function that can handle the network requests to graphql endpoint
  * @param {Options} options                 - the options to be used by client
  * @param {boolean} options.shouldBatch     - should the client batch requests. (default true)
  * @param {integer} options.batchInterval   - duration (in MS) of each batch window. (default 6)

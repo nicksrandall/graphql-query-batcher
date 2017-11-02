@@ -12,7 +12,7 @@ Create a batcher client.
 
 **Parameters**
 
--   `fetcher` **Fetcher** The url to the graphql endpoint you are targeting.
+-   `fetcher` **Fetcher** A function that can handle the network requests to graphql endpoint
 -   `options` **Options** the options to be used by client (optional, default `{}`)
     -   `options.batchInterval` **integer** duration (in MS) of each batch window. (default 6) (optional, default `6`)
     -   `options.shouldBatch` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** should the client batch requests. (default true) (optional, default `true`)
